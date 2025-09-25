@@ -31,7 +31,7 @@ def clear():
         raise Exception("Error:", response.status_code, response.text)
 
 def chat(model, user_input):
-    print("\nThinking...")
+    print("\nThinking (model could be downloading if it takes long)...")
 
     response = requests.post(f"http://{HOST}:{PORT}/api/chat", json={"model": model, "prompt": user_input})
 
