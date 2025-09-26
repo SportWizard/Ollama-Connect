@@ -11,10 +11,14 @@ async function getModels() {
     });
 }
 
-function modelExist(model) {
+function updateVersion(model) {
     if (!model.includes(":"))
-        model += ":latest"
+        return `${model}:latest`
 
+    return model
+}
+
+function modelExist(model) {
     if (models.has(model))
         return true
 
@@ -27,6 +31,14 @@ async function addModel(model) {
     await ollama.pull({ model: model });
 
     models.add(model);
+}
+
+async function removeModel(model) {
+    console.log("Removing model...");
+
+    await ollama.delete({ model: model });
+
+    models.delete(model);
 }
 
 async function think(model, prompt) {
@@ -54,4 +66,4 @@ function clear() {
     history = [];
 }
 
-export { getModels, modelExist, addModel, think, clear };
+export { updateVersion, getModels, modelExist, addModel, removeModel, think, clear };

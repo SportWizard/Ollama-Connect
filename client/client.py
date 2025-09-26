@@ -30,6 +30,18 @@ def clear():
     else:
         raise Exception("Error:", response.status_code, response.text)
 
+def remove():
+    model = input("Name of the model to be removed: ")
+
+    response = requests.post(f"http://{HOST}:{PORT}/api/remove", json={"model": model})
+
+    if response.status_code == 200:
+        print("Model deleted\n")
+    elif response.status_code == 404:
+        print("Model not installed or doesn't exists\n")
+    else:
+        raise Exception("Error:", response.status_code, response.text)
+
 def chat(model, user_input):
     print("\nThinking (model could be downloading if it takes long)...")
 
@@ -52,6 +64,8 @@ def main():
             break
         elif user_input == "/clear":
             clear()
+        elif user_input == "/remove":
+            remove()
         else:
             chat(model, user_input)
 
