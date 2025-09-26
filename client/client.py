@@ -41,7 +41,7 @@ def chat(model, user_input):
         raise Exception("Error:", response.status_code, response.text)
 
 def main():
-    model = input("Input the name of the model avaliable in Ollama (leave empty to use default): ")
+    model = input("Input the name of the model avaliable in Ollama: ")
 
     print("Enter and then Ctrl-D or Ctrl-Z ( windows ) to sumbit your prompt.\n")
 

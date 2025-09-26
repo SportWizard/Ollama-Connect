@@ -1,5 +1,6 @@
 import express from "express";
-import ollama from "ollama";
+
+import { getModels, modelExist, addModel, think, clear } from "./helper.js";
 
 const app = express();
 app.use(express.json());
@@ -7,57 +8,22 @@ app.use(express.json());
 const PORT = process.env.PORT || 12345;
 const HOST = process.env.HOST || "0.0.0.0";
 
-// Chat history
-let history = [];
-
-let models = [];
-
-async function getModels() {
-    const modelList = await ollama.list()
-
-    modelList.models.forEach((model) => {
-        models.push(model.model);
-    });
-}
-
-async function checkAndAddModel(model) {
-    if (model) {
-        if (!model.includes(":"))
-            model += ":latest"
-
-        if (!models.includes(model)) {
-            console.log("Downloading model...");
-
-            await ollama.pull({ model: model });
-        }
-    }
-}
-
 app.post("/api/chat", async (req, res) => {
-    const prompt = req.body.prompt;
     const model = req.body.model;
+    const prompt = req.body.prompt;
 
-    // Exit early if prompt is not provided
+    // Exit early if model and prompt is not provided
+    if (!model)
+        return res.status(400).json({ error: "Missing \"model\"" });
+
     if (!prompt)
         return res.status(400).json({ error: "Missing \"prompt\"" });
 
     try {
-        await checkAndAddModel(model);
+        if (!modelExist(model))
+            await addModel(model);
 
-        console.log("Thinking...")
-
-        // Add user response to chat history
-        history.push({ role: "user", content: prompt });
-
-        const response = await ollama.chat({
-            model: model || "llama3.1",
-            messages: history
-        });
-
-        const ollama_res = response.message.content;
-
-        // Add Ollama's response to chat history
-        history.push({ role: "assistant", content: ollama_res })
+        const ollama_res = await think(model, prompt);
 
         res.status(200).json({ msg: ollama_res });
 
@@ -77,9 +43,7 @@ app.post("/api/chat", async (req, res) => {
 
 app.post("/api/clear", (req, res) => {
     try {
-        console.log("Cleaning chat history...");
-
-        history = [];
+        clear();
 
         res.status(200).json({ msg: "Success" });
 
